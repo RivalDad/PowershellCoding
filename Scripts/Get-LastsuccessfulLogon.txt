@@ -1,0 +1,2 @@
+#Get last logged on time
+Get-ADUser -Filter * -Properties * | Select-Object -Property Name, @{Name="Total failed logons";Expression="msDS-FailedInteractiveLogonCount"}, @{Name="Recent failed logons";Expression="msDS-FailedInteractiveLogonCountAtLastSuccessfulLogon"}, @{"Name"="Last failed logon";Expression={[datetime]::FromFileTime($_.'msDS-LastFailedInteractiveLogonTime')}}, @{"Name"="Last successful logon";Expression={[datetime]::FromFileTime($_.'msDS-LastSuccessfulInteractiveLogonTime')}} | Sort-Object Name | Format-Table

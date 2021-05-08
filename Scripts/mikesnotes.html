@@ -1,0 +1,331 @@
+    <head>
+        <meta charset="utf-8">
+        <link rel=icon href=/WMC_icon.ico>
+        <!--[if IE]><meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1"><![endif]-->
+        <title>Cool Tools</title>
+    	<meta name="keywords" content="" />
+		<meta name="description" content="" />
+        <meta name="viewport" content="width=device-width">
+    </head>
+
+
+<h1> Help out with my day to day job. </h1> 
+
+
+To make sure all issues are documented and addressed in a timely manner please remember to send non-urgent requests to our support site and always call us if it is an urgent matter that needs immediate attention. My schedule is quite variable so my availability is often limited but the Service Desk knows how to get a hold of me if it is something that requires my immediate attention.
+
+I've created this service request on your behalf and someone will reach out to you to assist. If this is something that is urgent give us a call and reference this ticket number.
+
+
+
+<!------------------ Connectwise help ------------------------------
+
+!!AssignMe!!
+!!AssignTo:Member_ID!!
+
+!!SetType:Request!!
+	
+!!AddInternal:Enter internal message!!
+!!Task:Task description!!
+
+!!Contact:emailAddress@mailserver.com!!
+
+!!Company:InsertCompanyName!!
+
+
+<!------------------ Connectwise help ------------------------------
+//RDSH RDP Remote Desktop Profile dismount VHD//
+diskpart
+list vdisk
+select vdisk file=c:\test.vhd 
+detach vdisk
+
+//Find files larger than X GB (Length = Bytes) and modified before 1/1/19///
+Get-ChildItem "L:\Shared\Projects Office" -recurse | where-object {$_.length -gt 5368709120 -AND $_.lastwritetime -lt `1/1/19'} | Select Name, Length, FullName | ft -auto > C:\temp\LargeFilesLDrive.txt
+
+<h4>Force dirsync </h4>
+Start-ADSyncSyncCycle -PolicyType Delta
+Start-ADSyncSyncCycle -PolicyType Initial
+
+
+Force Active directory replication
+Pull replication: repadmin /syncall /AeD
+Push replication: repadmin /syncall /APeD
+/////
+
+/////LOOP POWERSHELL/////
+$<1stVARIABLE> = Import-CSV "C:\temp\<CSV LIST WITH HEADERS>"
+Foreach ($<2ndVARIABLE> in $<1stVARIABLE>)
+{
+<PS COMMAND> $2ndVARIABLE.<HEADER NAME, can have multiple>
+}
+
+///Set Permissions Recursively ///
+$FileList = Get-ChildItem "C:\FolderToSetPermissions" -Recurse | ForEach-Object -Process {$_.FullName}
+$ACL = get-acl "C:\FolderWithCorrectPermissions"
+$Ar = New-Object  system.security.accesscontrol.filesystemaccessrule("zweiner","FullControl","Allow")
+$Acl.SetAccessRule($Ar)
+Foreach ($File in $FileList)
+{
+Set-Acl -path "$File" -AclObject $Acl
+}
+/////
+
+profile reg key 
+HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows NT\CurrentVersion\ProfileList
+
+Uninstall reg key
+HKEY_LOCAL_MACHINE\Software\Microsoft\Windows\CurrentVersion\Uninstall
+
+/////
+Create dummy file CMD line (In bytes, 50MB below)
+fsutil file createnew 50MBTempFile.out 52428800
+
+/////Find state of active RDS sessions/////
+Get-RDUserSession -ConnectionBroker SERVER | ft -property servername, username, sessionstate, sessionid 
+
+////////////////////////////////// 
+Find .NET installed versions in PowerShell
+
+Get-ChildItem 'HKLM:\SOFTWARE\Microsoft\NET Framework Setup\NDP' -recurse | Get-ItemProperty -name Version,Release -EA 0 | Where { $_.PSChildName -match '^(?!S)\p{L}'} |Select PSChildName, Version, Release
+
+/////Delete windows run history/////
+HKEY_CURRENT_USER\Software\Microsoft\Windows\CurrentVersion\Explorer\RunMRU. 
+
+/////List all installed windows updates/////
+wmic qfe list brief /format:htable > "%USERPROFILE%\hotfix.html"
+
+
+/////////////Find Exchange Mailbox based on SMTP address //////////////
+
+Get-Recipient -resultSize unlimited | select name -expand emailAddresses | where {$_.smtpAddress -match ".*administrator.*@.*"} | Format-Table name, smtpaddress
+
+/////////////Find Public Folder based on name //////////////
+Get-PublicFolder -Recurse | where {$_.Name -match ".*TEST.*"}
+
+/////////////Find Contact based on email//////////////
+Get-Contact -resultSize unlimited | select name, WindowsEmailAddress | where {$_.WindowsEmailAddress -match ".*.*@aclusocal.org"} | Format-Table name, WindowsEmailAddress
+
+/////////////////// List exchange email addresses EMS
+
+Public folders: 
+Get-MailPublicFolder -Filter { EmailAddresses -like "*domain.com" } | ft Alias, EmailAddresses
+
+Export list of public folders and sizes:
+Get-PublicFolderStatistics | ft FolderPath,TotalItemSize,LastAccessTime > publicfolders.txt
+
+Export mail enabled public folders with address
+Get-MailPublicFolder | ft Alias,PrimarySmtpAddress > MailEnabledPublicFolders.txt
+
+Regular mailboxes:
+Get-recipient -Filter { EmailAddresses -like "*domain.com" } | ft Alias, EmailAddresses
+
+////////////////
+Get Exchange 2010 Mailboxes and Sizes
+Get-Mailbox | Get-MailboxStatistics | ft DisplayName, TotalItemSize > MailboxReport.txt
+Get-PublicFolderStatistics | ft AdminDisplayName, TotalItemSize > publicfolders.txt
+
+Get-MailboxStatistics -Database "EMW" | Select DisplayName, ItemCount, TotalItemSize | Sort-Object TotalItemSize -Descending | Export-CSV "C:\temp\mbsize.csv"
+
+//////////////grant access to all mailboxes///////////////////
+Get-MailboxDatabase -Identity * | Add-ADPermission -User "xanrep" -AccessRights GenericAll
+
+Exchange 2013:
+Get-Mailbox -ResultSize unlimited -Filter {(RecipientTypeDetails -eq 'UserMailbox') -and (Alias -ne 'XTest')} | Add-MailboxPermission -User xtest@domain.com -AccessRights fullaccess -InheritanceType all -AutoMapping:$false 
+
+//////Delete domain aliases from Exchange Management Shell
+foreach($i in Get-Mailbox -ResultSize Unlimited) {
+$i.EmailAddresses |
+?{$_.AddressString -like '*@coachforcollege.org'} | %{
+Set-Mailbox $i -EmailAddresses @{remove=$_}
+}
+}
+/////
+foreach($i in Get-DistributionGroup -ResultSize Unlimited) {
+$i.EmailAddresses |
+?{$_.AddressString -like '*@coachforcollege.org'} | %{
+Set-DistributionGroup $i -EmailAddresses @{remove=$_}
+}
+}
+/////
+foreach($i in Get-Contact -ResultSize Unlimited) {
+$i.EmailAddresses |
+?{$_.AddressString -like '*@coachforcollege.org'} | %{
+Set-Contact $i -EmailAddresses @{remove=$_}
+}
+}
+
+
+////////////////
+Discovery Mailbox
+http://technet.microsoft.com/en-us/library/dd298064.aspx
+
+New-MailboxSearch -name JanisArchive -SourceMailboxes Janis -StartDate "01/01/2005" -EndDate "09/1
+5/2011" -StatusMailRecipients administrator@mackenziesf.com -ExcludeDuplicateMessages $True -LogLevel Full -Confirm -Mes
+sageTypes {email, meetings} -TargetMailbox JanisArchive -SearchDumpster -IncludeUnsearchableItems
+
+Confirm
+Are you sure you want to perform this action?
+New MaibloxSearch JanisArchive.
+[Y] Yes [A] Yes to All [N] No [L] No to All [?] Help (default is "Y"): a
+
+
+//////////////////////////////////
+PRI, phones, block, port numbers
+-PRI physicals lines for phones
+-PRIs contain multiple trunks, trunks contain ~20 numbers
+-Voice call path is the actual individual numbers that can be on the phone at once (~24 right now).
+
+
+\\\\\\\\\\\\\\\ Send test email from cmd\\\\\\\\\\\\\\\
+To send telnet email:
+telnet <mail server> <port>
+mail from:email@domain.com
+rcpt to:xtest@domain.com
+DATA
+Test
+.
+
+//////////////find listening ports, ESXi ///////////////////
+esxcli network ip connection list |grep <PORT>
+
+lsof -i -P -n 
+
+//////////////Connect to O365/EOP powershell ///////////
+$UserCredential = Get-Credential
+$Session = New-PSSession -ConfigurationName Microsoft.Exchange -ConnectionUri https://outlook.office365.com/powershell-liveid/ -Credential $UserCredential -Authentication Basic -AllowRedirection
+Import-PSSession $Session
+
+/////Find PSTs/////
+gci -path D:\ -recurse -include *.pst |select-object fullname,lastwritetime|export-csv c:\temp\PSTs.csv
+
+/////Find available whitespace and mailbox database size/////
+Get-MailboxDatabase -status | fl name,DatabaseSize,AvailableNewMailboxSpace
+/////////Exchange 2007/2010 send/receive limits EMS  //////////////////
+Get-TransportConfig | FL *Max*
+Get-ReceiveConnector | FL *essageSize*
+
+////////////////////////////////// Change find PID of process listening on port
+netstat -aon
+
+
+/////
+To reset the VMware ESXi 5 trial license period for another 60 days, do the following:
+1.Login as root
+2.cd /etc/vmware
+3.rm -r vmware.lic license.cfg
+4.services.sh -restart 
+
+////////////////////////////////// Change MAC hostname terminal ////////////////////////////////// 
+
+
+sudo scutil –-set HostName new_hostname
+//////////////
+Windows: Vista, 7, Server 2008 and higher
+
+Ping for IPv4	ping -4
+Ping for IPv6	ping -6
+Traceroute for IPv4	tracert -4
+Traceroute for IPv6	tracert -6
+Interface Info	ipconfig /all
+IPv4 Route table	netsh interface ipv4 show route
+IPv6 Route table	netsh interface ipv6 show route
+IPv4 arp table	arp -a
+IPv6 ndp table	netsh interface ipv6 show neighbors
+
+/////////////Dump DHCP Settings///////////////////
+netsh dhcp server dump > dhcp.txt
+
+/////find windows version ///////
+systeminfo | findstr /B /C:"OS Name" /C:"OS Version"
+
+
+////////////////////SHOW WLAN PSK\\\\\\\\\
+netsh wlan show profile name=“ProfileName” key=clear
+
+\\\\\\\\\\\\\Wildcard search regex notepad++////////////////
+(XYZ.*)
+
+////////////////////////iperf////////////////////////////////
+UDP Client side: iperf.exe -c <hostname> -u 
+UDP Server side: iperf -s -u -i 1
+-u = udp
+-s = server mode
+-i internal
+-b ##m (## Mbps to send at)
+-l ## = mtu
+
+////UC560 Cisco find DHCP leases////
+show ip dhcp binding
+
+/////wireshark////
+Filter by IP: ip.addr==<IP> 
+Filter by port tcp.port==2000
+
+
+/////Find GUID of installed app in registry/////
+get-wmiobject Win32_Product | Format-Table IdentifyingNumber, Name
+
+/////Find location of all SQL DBs/////
+SELECT name, physical_name AS current_file_location
+FROM sys.master_files
+
+//////////////////////////////////
+
+SQL Active Connections:
+
+SELECT 
+    DB_NAME(dbid) as DBName, 
+    COUNT(dbid) as NumberOfConnections,
+    loginame as LoginName
+FROM
+    sys.sysprocesses
+WHERE 
+    dbid > 0
+GROUP BY 
+    dbid, loginame
+;
+
+/////////////////////
+Clean Win SXS folder
+
+Win 7: dism /online /cleanup-image /spsuperseded
+
+Win 8: http://technet.microsoft.com/en-us/library/dn251565.aspx 
+schtasks.exe /Run /TN "\Microsoft\Windows\Servicing\StartComponentCleanup"
+
+Dism.exe /online /Cleanup-Image /StartComponentCleanup (previous versions of updated components will be immediately deleted (without a 30 day grace period) and you will not have a 1-hour timeout limitation.)
+
+Dism.exe /online /Cleanup-Image /StartComponentCleanup /ResetBase (removes all superseded versions of every component in the component store.)
+
+/////Flush Mac DNS/////
+El Capitan 10.11
+sudo dscacheutil -flushcache; sudo killall -HUP mDNSResponder
+
+Yosemite 10.10
+sudo discoveryutil mdnsflushcache;sudo discoveryutil udnsflushcaches
+
+Mavericks 10.9
+dscacheutil -flushcache;sudo killall -HUP mDNSResponder
+
+/////
+T&M rates Contracts
+N:\Templates\Contracts\"General Service Agreement 2017 use this"
+
+////Fix Windows search////
+On an ELEVATED PowerShell:
+Get-AppXPackage -AllUsers | Foreach {Add-AppxPackage -DisableDevelopmentMode -Register "$($_.InstallLocation)\AppXManifest.xml"}
+
+services.msc find "Windows Search" and right-click > Properties. Then go to the "Log On" tab and make sure the "Local System account" > "Allow service to interact with desktop" check
+
+Change HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows Search\SetupCompletedSuccessfully = 0
+
+Create a new administrator on your Window 10 and sign in as that user
+Delete (or rename) C:\Users\<PROBLEM USER>\AppData\Local\Packages\Microsoft.Windows.Cortana_cw5n1h2txyewy
+Sign back in as the PROBLEM USER
+Open PowerShell as an admin and type (or paste)
+Add-AppxPackage -Path “C:\Windows\SystemApps\Microsoft.Windows.Cortana_cw5n1h2txyewy\Appxmanifest.xml” -DisableDevelopmentMode -Register
+
+admin command prompt: sfc /scannow
+
+Stop windows search service, delete all files with EDB in the name, restart computer

@@ -1,0 +1,5 @@
+# used for getting connected to Microsoft online services
+$UserCredential = Get-Credential 
+Connect-MsolService -credential $usercredential
+$Session = New-PSSession -ConfigurationName Microsoft.Exchange -ConnectionUri https://outlook.office365.com/powershell-liveid/ -Credential $UserCredential -Authentication Basic -AllowRedirection
+Import-PSSession $Session 

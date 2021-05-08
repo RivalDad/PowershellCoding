@@ -1,0 +1,70 @@
+.DESCRIPTION
+   This script is in two parts. Part1: Fixes a GPO that disallows manual Windows Update. Part2: Finds and installs available Windows updates
+.EXAMPLE
+    Just run it. Don't get fancy.  
+.NOTES
+   This needs to be ran as an Admin. You may have to edit the output path for the Download folder. If there's already a folder with the name, the script will execute within a minute. 
+#>
+
+
+
+$registryPath = "HKLM:\software\policies\Microsoft\Windows\WindowsUpdate"
+$name = "DisableWindowsUpdateAccess"
+$value = "0"
+$foldername = Get-Random -maximum 100
+$newname = "download$foldernum.old"
+Set-ItemProperty -Path $registryPath -name $name -value $Value -force |Out-Null
+Net stop wuauserv
+ren 'C:\Windows\SoftwareDistribution\download' $newname
+net start wuauserv
+
+#------------------------------------------------------
+## ------------------------------------------------------------------
+## PowerShell Script To Automate Windows Update
+## Script should be executed with "Administrator" Privilege
+## ------------------------------------------------------------------
+#------------------------------------------------------
+$ErrorActionPreference = "SilentlyContinue"
+If ($Error) {
+	$Error.Clear()
+}
+$Today = Get-Date
+
+$UpdateCollection = New-Object -ComObject Microsoft.Update.UpdateColl
+$Searcher = New-Object -ComObject Microsoft.Update.Searcher
+$Session = New-Object -ComObject Microsoft.Update.Session
+
+Write-Host
+Write-Host "`t Initialising and Checking for Applicable Updates. Please wait ..." -ForeGroundColor "Yellow"
+$Result = $Searcher.Search("IsInstalled=0 and Type='Software' and IsHidden=0")
+
+If ($Result.Updates.Count -EQ 0) {
+	Write-Host "`t There are no applicable updates for this computer."
+}
+Else {
+	$ReportFile = $Env:ComputerName + "_Report.txt"
+	If (Test-Path $ReportFile) {
+		Remove-Item $ReportFile
+	}
+	New-Item $ReportFile -Type File -Force -Value "Windows Update Report For Computer: $Env:ComputerName`r`n" | Out-Null
+	Add-Content $ReportFile "Report Created On: $Today`r"
+	Add-Content $ReportFile "==============================================================================`r`n"
+	Write-Host "`t Preparing List of Applicable Updates For This Computer ..." -ForeGroundColor "Yellow"
+	Add-Content $ReportFile "List of Applicable Updates For This Computer`r"
+	Add-Content $ReportFile "------------------------------------------------`r"
+	For ($Counter = 0; $Counter -LT $Result.Updates.Count; $Counter++) {
+		$DisplayCount = $Counter + 1
+    		$Update = $Result.Updates.Item($Counter)
+		$UpdateTitle = $Update.Title
+		Add-Content $ReportFile "`t $DisplayCount -- $UpdateTitle"
+	}
+	$Counter = 0
+	$DisplayCount = 0
+	Add-Content $ReportFile "`r`n"
+	Write-Host "`t Initialising Download of Applicable Updates ..." -ForegroundColor "Yellow"
+	Add-Content $ReportFile "Initialising Download of Applicable Updates"
+	Add-Content $ReportFile "------------------------------------------------`r"
+	$Downloader = $Session.CreateUpdateDownloader()
+	$UpdatesList = $Result.Updates
+    $UpdatesList | foreach{write-output $_ | select Title}
+}

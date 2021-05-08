@@ -1,0 +1,2 @@
+$username = Read-Host -Prompt 'Input your users  name'
+Get-ADPrincipalGroupMembership $username | select name

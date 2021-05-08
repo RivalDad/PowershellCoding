@@ -1,0 +1,5 @@
+#shows the users' OU in the form that you normally use to put into powershell commands. 
+
+$user = Get-ADUser -Identity cathy.chen -Properties CanonicalName
+
+$userOU = ($user.DistinguishedName -split ",",2)[1]
