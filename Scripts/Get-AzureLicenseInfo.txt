@@ -1,4 +1,15 @@
 ﻿# used for getting connected to Microsoft online services
+<#
+.Synopsis
+   This script helps show how many of each license a client may have. 
+.DESCRIPTION
+   This function logs into O365 via powershell and reports back the amount of each of these 3 important license types. 
+.EXAMPLE
+    Just run it. Don't get fancy.  
+.NOTES
+   This needs to be ran as an Admin. You may have to edit the output path for the Download folder. If there's already a folder with the name, the script will execute within a minute. 
+#>
+
 $UserCredential = Get-Credential 
 Connect-MsolService -credential $usercredential
 $Session = New-PSSession -ConfigurationName Microsoft.Exchange -ConnectionUri https://outlook.office365.com/powershell-liveid/ -Credential $UserCredential -Authentication Basic -AllowRedirection

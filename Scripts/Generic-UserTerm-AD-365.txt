@@ -1,3 +1,15 @@
+<#
+.Synopsis
+   Generic user termination  
+.DESCRIPTION
+   There are a few areas that need to be updated. if you're going to impliement this in your environemnt. 
+.EXAMPLE
+    Just run it. Don't get fancy.  
+.NOTES
+   This needs to be ran as an Admin. You may have to edit the output path for the Download folder. If there's already a folder with the name, the script will execute within a minute. 
+#>
+
+
 function Get-NewPassword{ 
     -join ((33..126) | Get-Random -Count 16 | % {[char]$_})
 }
