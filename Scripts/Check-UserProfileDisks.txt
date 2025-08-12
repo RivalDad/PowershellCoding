@@ -33,26 +33,29 @@ Get-ChildItem $vhdxShare -recurse | Where-Object {$_.Extension -eq ".vhdx" -and 
       $filePath = $_.VersionInfo.FileName
       try{
         $vhdxFile = get-vhd -path $filePath -ErrorAction Stop
-        $vhdxSize = [math]::Round($vhdxFile.FileSize/1GB,2)
-        $vhdxTotalSize = [math]::Round($vhdxFile.Size/1GB,2)
-        $vhdxSpaceFree = $vhdxTotalSize - $vhdxSize
+        $vhdxSize = [math]::Round($vhdxFile.FileSize/1GB,2) # Calculate the size of the VHDX file in GB, rounded to 2 decimal places
+        $vhdxTotalSize = [math]::Round($vhdxFile.Size/1GB,2) # Calculate the total size of the VHDX file in GB, rounded to 2 decimal places
+        $vhdxSpaceFree = $vhdxTotalSize - $vhdxSize # Calculate the free space available in the VHDX file
 
+        # Create a new PSObject to store VHDX space information
         $vhdxSpaceInfo = New-Object -TypeName psobject
-        $vhdxSpaceInfo | Add-Member -MemberType NoteProperty -Name FilePath -Value $filePath
-        $vhdxSpaceInfo | Add-Member -MemberType NoteProperty -Name Size -Value $vhdxSize
-        $vhdxSpaceInfo | Add-Member -MemberType NoteProperty -Name TotalSize -Value $vhdxTotalSize
-        $vhdxSpaceInfo | Add-Member -MemberType NoteProperty -Name FreeSpace -Value $vhdxSpaceFree
+        $vhdxSpaceInfo | Add-Member -MemberType NoteProperty -Name FilePath -Value $filePath # Add the file path to the object
+        $vhdxSpaceInfo | Add-Member -MemberType NoteProperty -Name Size -Value $vhdxSize # Add the VHDX size to the object
+        $vhdxSpaceInfo | Add-Member -MemberType NoteProperty -Name TotalSize -Value $vhdxTotalSize # Add the total size to the object
+        $vhdxSpaceInfo | Add-Member -MemberType NoteProperty -Name FreeSpace -Value $vhdxSpaceFree # Add the free space to the object
+
+        # Export the VHDX space information to a CSV file, appending to the existing report
         $vhdxSpaceInfo | export-csv -path $reportPath -NoTypeInformation -Append
 
+        # Check if the free space is below the minimum threshold and display a warning if true
         if ($vhdxSpaceInfo.FreeSpace -lt $minimumFreeSpace){
             write-host -ForegroundColor Red "Only $vhdxSpaceFree GB left on $($vhdxFile.Path)"
         }
 
-        #write-host "Grabbed info for $filePath"
-      }
-      catch {
-      Write-host -ForegroundColor Red "Error pulling info for $filePath, user logged in?"
-      }
+        # Catch any errors that occur during the process and display an error message
+        catch {
+            Write-host -ForegroundColor Red "Error pulling info for $filePath, user logged in?"
+        }
       
 }
 
@@ -61,3 +64,4 @@ Get-ChildItem $vhdxShare -recurse | Where-Object {$_.Extension -eq ".vhdx" -and 
 #get the path to the users' vhdx file - $path
 $path = "\\Location\To\Profiles"\UVHD-S-1-5-21-2482637767-3900665392-389218837-5129.vhdx"
 #get-vhd -path $path | resize-vhd -Sizebytes 10GB
+
