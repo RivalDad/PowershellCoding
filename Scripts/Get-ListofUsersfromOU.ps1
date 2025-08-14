@@ -1,0 +1,4 @@
+$OUpath = 'ou=Austin,dc=testdomain,dc=local'
+$ExportPath = 'C:\Scripts\Reports\Active Users\users_in_Employees_OU.csv'
+Get-ADUser -Filter * -SearchBase $OUpath | Select-object Name | Export-Csv -NoType $ExportPath | Export-Csv -NoType $ExportPath
+Start-process $ExportPath

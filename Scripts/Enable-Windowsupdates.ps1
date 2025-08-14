@@ -1,0 +1,22 @@
+<#
+.Synopsis
+   Helps a tech get around the GPO blocking computers from being able to run windows updates. 
+.DESCRIPTION
+   This script is in two parts. Part1: Fixes a GPO that disallows manual Windows Update. Part2: Finds and installs available Windows updates
+.EXAMPLE
+    Just run it. Don't get fancy.  
+.NOTES
+   This needs to be ran as an Admin. You may have to edit the output path for the Download folder. If there's already a folder with the name, the script will execute within a minute. 
+#>
+
+clear
+
+$registryPath = "HKLM:\software\policies\Microsoft\Windows\WindowsUpdate"
+$name = "DisableWindowsUpdateAccess"
+$value = "0"
+$foldername = Get-Random -maximum 100
+$newname = "download$foldernum.old"
+Set-ItemProperty -Path $registryPath -name $name -value $Value -force |Out-Null
+Net stop wuauserv
+ren 'C:\Windows\SoftwareDistribution\download' $newname
+net start wuauserv

@@ -1,6 +1,0 @@
-clear
-$Session = New-Object -ComObject Microsoft.Update.Session 
-$Searcher = $Session.CreateUpdateSearcher()
-$HistoryCount = $Searcher.GetTotalHistoryCount()
-# http://msdn.microsoft.com/en-us/library/windows/desktop/aa386532%28v=vs.85%29.aspx
-$Searcher.QueryHistory(0,$HistoryCount) | ForEach-Object {$_}
